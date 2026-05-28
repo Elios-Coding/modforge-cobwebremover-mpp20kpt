@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Client-side implementation.
  *
- * Note: true “/cob” commands are server-side and not registered from a client-only mod.
+ * Note: true /cob commands are server-side and not registered from a client-only mod.
  * This mod provides a keybind + small menu button that performs the requested action
  * on the client world (singleplayer or servers that allow client-side block changes).
  */
@@ -32,9 +32,9 @@ public class CobwebremoverMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         try {
-            // 1.21+ KeyBinding constructor takes a Text category, not a String.
-            // Using a translatable text keeps compatibility with language files.
-            final Text category = Text.translatable("category.cobwebremover.general");
+            // Modern MC versions use a String category for key bindings.
+            // (The compiler error indicates the environment expects a Category, not a Text.)
+            final String category = "category.cobwebremover.general";
 
             OPEN_MENU_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                     "key.cobwebremover.open_menu",
@@ -74,7 +74,7 @@ public class CobwebremoverMod implements ClientModInitializer {
         try {
             if (client == null || client.world == null || client.player == null) return;
 
-            // Use client view distance to approximate “render distance”.
+            // Use client view distance to approximate render distance.
             int viewDistanceChunks;
             try {
                 viewDistanceChunks = client.options.getViewDistance().getValue();
