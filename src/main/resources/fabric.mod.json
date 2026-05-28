@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "cobwebremover",
+  "version": "${version}",
+  "name": "CobwebRemover",
+  "description": "Client-side keybind that scans loaded chunks around you and removes nearby cobweb blocks (replaces with air).",
+  "authors": [
+    "SspicyGamer"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/cobwebremover/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.modforge.cobwebremover.CobwebremoverMod"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.18.4",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
