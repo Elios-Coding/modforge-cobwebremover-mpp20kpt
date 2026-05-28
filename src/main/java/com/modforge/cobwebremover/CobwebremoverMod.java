@@ -32,18 +32,22 @@ public class CobwebremoverMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         try {
+            // 1.21+ KeyBinding constructor takes a Text category, not a String.
+            // Using a translatable text keeps compatibility with language files.
+            final Text category = Text.translatable("category.cobwebremover.general");
+
             OPEN_MENU_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                     "key.cobwebremover.open_menu",
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_KP_MULTIPLY,
-                    "category.cobwebremover.general"
+                    category
             ));
 
             REMOVE_COBWEBS_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                     "key.cobwebremover.remove_cobwebs",
                     InputUtil.Type.KEYSYM,
                     GLFW.GLFW_KEY_SLASH,
-                    "category.cobwebremover.general"
+                    category
             ));
 
             ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -71,7 +75,13 @@ public class CobwebremoverMod implements ClientModInitializer {
             if (client == null || client.world == null || client.player == null) return;
 
             // Use client view distance to approximate “render distance”.
-            int viewDistanceChunks = client.options.getViewDistance().getValue();
+            int viewDistanceChunks;
+            try {
+                viewDistanceChunks = client.options.getViewDistance().getValue();
+            } catch (Throwable t) {
+                // Fallback if options API differs.
+                viewDistanceChunks = 8;
+            }
             if (viewDistanceChunks < 2) viewDistanceChunks = 2;
 
             // Scan a cube of blocks covering the loaded chunk radius.
@@ -103,7 +113,12 @@ public class CobwebremoverMod implements ClientModInitializer {
                         if (client.world.getBlockState(pos).isOf(Blocks.COBWEB)) {
                             // Replace cobweb with air in the client world.
                             // In multiplayer, this will NOT be authoritative.
-                            boolean ok = client.world.setBlockState(pos, Blocks.AIR.getDefaultState());
+                            boolean ok;
+                            try {
+                                ok = client.world.setBlockState(pos, Blocks.AIR.getDefaultState());
+                            } catch (Throwable t) {
+                                ok = false;
+                            }
                             if (ok) removed++;
                         }
                     }
@@ -135,7 +150,11 @@ class CobwebremoverModScreen extends Screen {
             try {
                 MinecraftClient mc = MinecraftClient.getInstance();
                 CobwebremoverMod.removeCobwebsInLoadedArea(mc);
-                if (mc != null && mc.worldRenderer != null) mc.worldRenderer.reload();
+                try {
+                    if (mc != null && mc.worldRenderer != null) mc.worldRenderer.reload();
+                } catch (Throwable t) {
+                    // Renderer reload API can differ; ignore.
+                }
             } catch (Throwable t) {
                 LoggerFactory.getLogger("cobwebremover").error("Remove Cobwebs button failed", t);
             }
